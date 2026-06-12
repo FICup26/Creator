@@ -1,0 +1,148 @@
+
+
+
+Deliverability
+  
+
+Rispondere
+
+
+Inoltrare
+   
+
+Stampa
+  
+
+Borrar
+  
+
+s
+
+<pino@yopmail.com>
+
+venerdì 12 giugno 2026 16:57:30
+
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Web Studio Pro</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; background: #f4f7f6; }
+        
+        .toolbar { padding: 12px; background: #ffffff; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #e0e0e0; flex-wrap: wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        button { 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 13px; 
+            transition: all 0.2s ease;
+            background: #eef2f3;
+            color: #333;
+        }
+        button:hover { background: #dfe6e9; transform: translateY(-1px); }
+        button#btnToggle { background: #ffeaa7; color: #d35400; }
+        button#btnToggle:hover { background: #f1c40f; }
+
+        .workspace { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        textarea { flex: 1; padding: 25px; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; border: none; resize: none; outline: none; background: #fff; line-height: 1.6; }
+        #preview { width: 100%; height: 100%; border: none; display: none; background: #fff; }
+        .search-box { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; width: 160px; outline: none; }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <input type="file" id="fileImport" style="display:none" onchange="importFile(event)">
+    <button onclick="document.getElementById('fileImport').click()">📂 Importa</button>
+    <button onclick="exportFile()">💾 Esporta</button>
+    <div style="width:1px; height:20px; background:#ddd; margin: 0 5px;"></div>
+    <input type="text" id="search" class="search-box" placeholder="🔍 Cerca..." oninput="resetSearch()">
+    <button onclick="findNext()">⬇ Successivo</button>
+    <button onclick="findPrev()">⬆ Precedente</button>
+    <button id="btnToggle" onclick="toggleView()" style="margin-left:auto;">👁️ Visualizza Anteprima</button>
+</div>
+
+<div class="workspace">
+    <textarea id="fullCode" placeholder="Scrivi qui il tuo codice HTML/CSS..."></textarea>
+    <iframe id="preview"></iframe>
+</div>
+
+<script>
+    const fullCode = document.getElementById('fullCode');
+    const preview = document.getElementById('preview');
+    let searchIndices = [];
+    let currentMatch = -1;
+
+    function resetSearch() { currentMatch = -1; searchIndices = []; }
+
+    function findMatches() {
+        const term = document.getElementById('search').value;
+        if (!term) return [];
+        const code = fullCode.value;
+        let indices = [];
+        let pos = code.indexOf(term);
+        while (pos !== -1) {
+            indices.push(pos);
+            pos = code.indexOf(term, pos + 1);
+        }
+        return indices;
+    }
+
+    function findNext() {
+        searchIndices = findMatches();
+        if (searchIndices.length === 0) return;
+        currentMatch = (currentMatch + 1) % searchIndices.length;
+        highlightMatch();
+    }
+
+    function findPrev() {
+        searchIndices = findMatches();
+        if (searchIndices.length === 0) return;
+        currentMatch = (currentMatch - 1 + searchIndices.length) % searchIndices.length;
+        highlightMatch();
+    }
+
+    function highlightMatch() {
+        const term = document.getElementById('search').value;
+        const start = searchIndices[currentMatch];
+        fullCode.focus();
+        fullCode.setSelectionRange(start, start + term.length);
+    }
+
+    function exportFile() {
+        const blob = new Blob([fullCode.value], {type: 'text/html'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'progetto.html';
+        a.click();
+    }
+
+    function importFile(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = e => fullCode.value = e.target.result;
+        reader.readAsText(file);
+    }
+
+    function toggleView() {
+        const isPreview = preview.style.display === 'block';
+        if (!isPreview) {
+            preview.srcdoc = fullCode.value;
+            preview.style.display = 'block';
+            fullCode.style.display = 'none';
+            document.getElementById('btnToggle').innerText = "✏️ Torna al Codice";
+        } else {
+            preview.style.display = 'none';
+            fullCode.style.display = 'block';
+            document.getElementById('btnToggle').innerText = "👁️ Visualizza Anteprima";
+        }
+    }
+</script>
+</body>
+</html>
